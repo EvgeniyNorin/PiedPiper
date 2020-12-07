@@ -24,7 +24,7 @@ class QuestionnaireHandler(questionsHandler: QuestionsHandler, questionnaireDao:
           }
         }
         questionnaireDao
-          .insert(QuestionnaireEntity(request.textQuestions))
+          .insert(QuestionnaireEntity(request.textQuestions.toString(), "", ""))
           .recover {
             case th =>
               logger.error("Got error during inserting into questionnaire table", th)

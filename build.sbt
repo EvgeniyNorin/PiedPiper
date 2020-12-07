@@ -13,8 +13,6 @@ libraryDependencies ++= Seq(
   "de.heikoseeberger" %% "akka-http-circe" % "1.33.0",
   // database
   "org.tpolecat" %% "doobie-core"      % "0.8.8",
-  "org.tpolecat" %% "doobie-postgres"  % "0.8.8",
-  "org.tpolecat" %% "doobie-postgres"  % "0.8.8",
   //config
   "com.github.pureconfig" %% "pureconfig" % "0.12.3",
   //server part
@@ -26,6 +24,8 @@ libraryDependencies ++= Seq(
   //enum
   "com.beachape" %% "enumeratum" % "1.6.1"
 )
+
+unmanagedBase := baseDirectory.value / "libs"
 
 assemblyMergeStrategy in assembly := {
   case "reference.conf" => MergeStrategy.concat

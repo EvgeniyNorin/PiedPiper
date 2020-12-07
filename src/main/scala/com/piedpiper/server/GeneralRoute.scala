@@ -5,6 +5,11 @@ import akka.http.scaladsl.server.Route
 
 class GeneralRoute(loginHandler: LoginHandler,
                    questionsHandler: QuestionsHandler,
-                   questionnaireHandler: QuestionnaireHandler) {
-  val route: Route = loginHandler.route ~ questionsHandler.route ~ questionnaireHandler.route
+                   questionnaireHandler: QuestionnaireHandler,
+                   resourceHandler: ResourceHandler) {
+  val route: Route =
+    loginHandler.route ~
+      questionsHandler.route ~
+      questionnaireHandler.route ~
+      resourceHandler.route
 }

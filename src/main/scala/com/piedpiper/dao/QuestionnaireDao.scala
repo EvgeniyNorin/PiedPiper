@@ -10,7 +10,7 @@ import scala.concurrent.Future
 
 class QuestionnaireDao()(implicit xa: Transactor[IO]) {
   def insert(questionnaire: QuestionnaireEntity): Future[Unit] =
-    sql"""insert into questionnaire(text_questions) values (${questionnaire.textQuestions})""".update.run
+    sql"""insert into questionnaire(text_questions) values (${questionnaire.id})""".update.run
       .transact(xa)
       .as(())
       .unsafeToFuture()

@@ -22,11 +22,11 @@ class LoginHandler(userDao: UserDao)(implicit materializer: Materializer, execut
         case Some(entity) =>
           entity.token
             .fold[Future[String]] {
-              val token = UUID.randomUUID().toString
-              userDao.updateToken(authRequest.login, token).map(_ => token)
-            } { tkn =>
-              Future.successful(tkn)
-            }
+            val token = UUID.randomUUID().toString
+            userDao.updateToken(authRequest.login, token).map(_ => token)
+          } { tkn =>
+            Future.successful(tkn)
+          }
             .map(token => Right(AuthResponse(token)))
         case None =>
           logger.info(s"User not found for body: ${authRequest.toString}")
@@ -40,13 +40,15 @@ class LoginHandler(userDao: UserDao)(implicit materializer: Materializer, execut
   }
 
   val route: Route = post {
-    path("login") {
-      entity(as[AuthRequest]) { authRequest: AuthRequest =>
-        onSuccess(getOrUpdateToken(authRequest)) {
-          case Left(th)        =>
-            complete(HttpResponse(status = StatusCodes.Unauthorized, entity = HttpEntity.Empty))
-          case Right(response) =>
-            complete(response)
+    pathPrefix("api") {
+      path("login") {
+        entity(as[AuthRequest]) { authRequest: AuthRequest =>
+          onSuccess(getOrUpdateToken(authRequest)) {
+            case Left(th) =>
+              complete(HttpResponse(status = StatusCodes.Unauthorized, entity = HttpEntity.Empty))
+            case Right(response) =>
+              complete(response)
+          }
         }
       }
     }

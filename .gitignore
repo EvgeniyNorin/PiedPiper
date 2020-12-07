@@ -2,3 +2,5 @@ target/
 .idea/
 project/target
 finagle-example.log
+src/main/resources/dist
+libs/

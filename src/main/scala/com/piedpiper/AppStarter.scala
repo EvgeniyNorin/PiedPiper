@@ -5,7 +5,7 @@ import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
 import cats.effect.{ContextShift, IO}
 import com.piedpiper.dao.{QuestionnaireDao, QuestionsDao, UserDao}
-import com.piedpiper.server.{GeneralRoute, LoginHandler, QuestionnaireHandler, QuestionsHandler}
+import com.piedpiper.server.{GeneralRoute, LoginHandler, QuestionnaireHandler, QuestionsHandler, ResourceHandler}
 import com.typesafe.scalalogging.Logger
 import doobie.util.transactor.Transactor
 import org.slf4j.LoggerFactory
@@ -23,10 +23,12 @@ object AppStarter {
     implicit val materializer: ActorMaterializer = ActorMaterializer()
 
     implicit val xa = Transactor.fromDriverManager[IO](
-      driver = "org.postgresql.Driver",
-      url = "jdbc:postgresql://34.90.231.206:5432/postgres",
-      user = "myuser",
-      pass = "mypass"
+      driver = "oracle.jdbc.OracleDriver",
+//      url = "jdbc:oracle:thin:@localhost:1521:orbis",
+      url = "jdbc:oracle:thin:@localhost:1521:orbis",
+//      url = "jdbc:postgresql://34.90.231.206:5432/postgres",
+      user = "s208069",
+      pass = "nvc932"
     )
 
     val userDao = new UserDao()
@@ -36,7 +38,8 @@ object AppStarter {
     val loginHandler = new LoginHandler(userDao)
     val questionsHandler = new QuestionsHandler(questionsDao)
     val questionnaireHandler = new QuestionnaireHandler(questionsHandler, questionnaireDao)
-    val piedPiperServer = new GeneralRoute(loginHandler, questionsHandler, questionnaireHandler)
+    val resourceHandler = new ResourceHandler()
+    val piedPiperServer = new GeneralRoute(loginHandler, questionsHandler, questionnaireHandler, resourceHandler)
     Http().bindAndHandle(piedPiperServer.route, "localhost", 8080)
   }
 }
