@@ -1,33 +1,34 @@
-package com.piedpiper.server
+package com.piedpiper.server.handlers
 
 import java.util.UUID
 
 import akka.http.scaladsl.model.{HttpEntity, HttpResponse, StatusCodes}
-import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Directives.{entity, _}
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
-import com.piedpiper.dao.UserDao
+import com.piedpiper.dao.{UserDao, UserSessionDao}
+import com.piedpiper.server.{AuthRequest, AuthResponse}
 import com.typesafe.scalalogging.Logger
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class LoginHandler(userDao: UserDao)(implicit materializer: Materializer, executionContext: ExecutionContext, logger: Logger) {
+class LoginHandler(userDao: UserDao,
+                   userSessionDao: UserSessionDao)
+                  (implicit ma: Materializer,
+                   executionContext: ExecutionContext,
+                   logger: Logger) {
   private def getOrUpdateToken(authRequest: AuthRequest): Future[Either[Throwable, AuthResponse]] = {
     userDao
       .find(authRequest.login, authRequest.password)
       .map(_.headOption)
       .flatMap {
         case Some(entity) =>
-          entity.token
-            .fold[Future[String]] {
-            val token = UUID.randomUUID().toString
-            userDao.updateToken(authRequest.login, token).map(_ => token)
-          } { tkn =>
-            Future.successful(tkn)
-          }
-            .map(token => Right(AuthResponse(token)))
+          val token = UUID.randomUUID().toString
+          userSessionDao
+            .insert(entity.userId, token)
+            .map(_ => Right(AuthResponse(token, entity.userRoleType)))
         case None =>
           logger.info(s"User not found for body: ${authRequest.toString}")
           Future.successful(Left(new RuntimeException("User entity not found")))

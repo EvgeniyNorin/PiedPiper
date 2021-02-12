@@ -1,4 +1,6 @@
-ssh -p 2222 -L 1521:localhost:1521 s208069@helios.cs.ifmo.ru
+sshpass -p 'nvc932' ssh -p 2222 -L 10079:localhost:10079 s208069@helios.cs.ifmo.ru
+export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk1.8.0_202.jdk/Contents/Home/"
+sshpass -p 'nvc932' ssh -p 2222 s208069@helios.cs.ifmo.ru
 
 ##########################
 

@@ -1,25 +1,30 @@
 package com.piedpiper.server
 
+import com.piedpiper.common.Role
+
 case class AuthRequest(login: String, password: String)
 
-case class AuthResponse(token: String)
+case class AuthResponse(token: String, role: Role)
 
-case class TextQuestion(id: String, label: String)
+case class UserInfoResponse(name: String,
+                            surname: String,
+                            patronymic: Option[String],
+                            role: Role)
 
-case class Variant(label: String, isCorrect: Boolean)
+case class CandidateEntityResponse(id: String, fio: String, position: String)
 
-case class MultipleChoicesQuestion(id: String, label: String, variants: Option[List[Variant]])
-case class MultipleChoicesQuestionEntity(id: String, label: String, variants: List[String])
+case class CandidatesListResponse(candidates: List[CandidateEntityResponse])
 
-case class QuestionsResponse(
-    textQuestions: List[TextQuestion],
-    multipleChoicesQuestions: List[MultipleChoicesQuestionEntity]
+case class TextForm(questionId: String, answer: String)
+case class RadioForm(questionId: String, chosen: String)
+
+case class QuestionnaireFormPutRequest(
+  textQuestions: List[TextForm],
+  multipleChoicesQuestions: List[RadioForm]
 )
 
-case class TextQuestionRequestEntity(id: String, answer: String)
-case class MultipleChoicesQuestionRequestEntity(id: String, chosen: String)
+case class QuestionnaireFormPutResponse()
 
-case class QuestionnaireRequest(
-    textQuestions: List[TextQuestionRequestEntity],
-    multipleChoicesQuestions: List[MultipleChoicesQuestionRequestEntity]
-)
+case class QuestionResponse(id: String, question: String, answer: String)
+
+case class CandidateFilledFormResponse(elements: List[QuestionResponse])
