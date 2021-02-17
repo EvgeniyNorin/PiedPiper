@@ -7,19 +7,22 @@ import akka.http.scaladsl.server.Directives.{entity, _}
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import com.piedpiper.dao.{UserDao, UserSessionDao}
-import com.piedpiper.server.{AuthRequest, AuthResponse}
+import com.piedpiper.server.directives.AuthDirective
+import com.piedpiper.server.{AuthRequest, AuthResponse, SessionDeactivateResponse}
 import com.typesafe.scalalogging.Logger
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class LoginHandler(userDao: UserDao,
-                   userSessionDao: UserSessionDao)
-                  (implicit ma: Materializer,
-                   executionContext: ExecutionContext,
-                   logger: Logger) {
-  private def getOrUpdateToken(authRequest: AuthRequest): Future[Either[Throwable, AuthResponse]] = {
+class LoginHandler(userDao: UserDao, userSessionDao: UserSessionDao, authDirective: AuthDirective)(
+  implicit ma: Materializer,
+  executionContext: ExecutionContext,
+  logger: Logger
+) {
+  private def getOrUpdateToken(
+    authRequest: AuthRequest
+  ): Future[Either[Throwable, AuthResponse]] = {
     userDao
       .find(authRequest.login, authRequest.password)
       .map(_.headOption)
@@ -46,11 +49,23 @@ class LoginHandler(userDao: UserDao,
         entity(as[AuthRequest]) { authRequest: AuthRequest =>
           onSuccess(getOrUpdateToken(authRequest)) {
             case Left(th) =>
-              complete(HttpResponse(status = StatusCodes.Unauthorized, entity = HttpEntity.Empty))
+              complete(
+                HttpResponse(
+                  status = StatusCodes.Unauthorized,
+                  entity = HttpEntity.Empty
+                )
+              )
             case Right(response) =>
               complete(response)
           }
         }
+      } ~ path("deactivate-session") {
+        authDirective.authDirective(
+          user =>
+            onSuccess(userSessionDao.delete(user.sessionId))(
+              complete(SessionDeactivateResponse())
+            )
+        )
       }
     }
   }

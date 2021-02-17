@@ -1,4 +1,3 @@
-
 name := "PiedPiper"
 
 version := "0.1"
@@ -42,7 +41,13 @@ scalacOptions ++= Seq(
 )
 assemblyMergeStrategy in assembly := {
   case "reference.conf" => MergeStrategy.concat
-  case PathList("META-INF", "maven", "org.webjars", "swagger-ui", "pom.properties") =>
+  case PathList(
+      "META-INF",
+      "maven",
+      "org.webjars",
+      "swagger-ui",
+      "pom.properties"
+      ) =>
     MergeStrategy.singleOrError
   case x =>
     val oldStrategy = (assemblyMergeStrategy in assembly).value

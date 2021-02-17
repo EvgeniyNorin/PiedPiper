@@ -12,7 +12,7 @@ class CandidateDao()(implicit xa: Transactor[IO], ex: ExecutionContext) {
 
   def insert(candidateId: String,
              approved: Boolean,
-             refererId: Option[Boolean],
+             refererId: Option[String],
              candidateForm: CandidateForm
             ): Future[Unit] = {
     sql"""insert into PIED_PIPER_CANDIDATE (CANDIDATE_ID, REFERER_ID, APPROVED, FORM)
@@ -42,6 +42,24 @@ class CandidateDao()(implicit xa: Transactor[IO], ex: ExecutionContext) {
       .transact(xa)
       .unsafeToFuture()
       .map(_.map(toCandidateForm).headOption)
+  }
+
+  def setApproved(candidateId: String): Future[Unit] = {
+    sql"""UPDATE PIED_PIPER_CANDIDATE SET APPROVED='1' WHERE CANDIDATE_ID=$candidateId"""
+      .update
+      .run
+      .transact(xa)
+      .as(())
+      .unsafeToFuture()
+  }
+
+  def deleteCandidate(candidateId: String): Future[Unit] = {
+    sql"""DELETE FROM PIED_PIPER_CANDIDATE WHERE CANDIDATE_ID=$candidateId"""
+      .update
+      .run
+      .transact(xa)
+      .as(())
+      .unsafeToFuture()
   }
 }
 

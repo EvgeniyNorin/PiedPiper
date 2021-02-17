@@ -9,10 +9,10 @@ object Role extends Enum[Role] with DoobieEnum[Role] with CirceEnum[Role] {
 
   val values = findValues
 
-  case object Referer extends Role
+  case object REFERER extends Role
 
-  case object Reviewer extends Role
+  case object REVIEWER extends Role
 
-  case object Administrator extends Role
+  case object ADMINISTRATOR extends Role
 
 }

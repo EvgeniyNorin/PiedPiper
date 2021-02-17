@@ -30,17 +30,21 @@ case class CandidateEntity(candidateId: String,
                            approved: Boolean,
                            form: CandidateForm)
 
-case class RawQuestionEntity(questionId: String,
+case class RawQuestionEntity(questionId: Long,
                              questionType: QuestionType,
                              isImmutable: Boolean,
                              content: String)
 
-case class TextQuestionEntity(questionId: String,
+case class TextQuestionEntity(questionId: Long,
                               questionType: QuestionType,
                               isImmutable: Boolean,
                               textQuestion: TextQuestion)
 
-case class RadioQuestionEntity(questionId: String,
+case class RadioQuestionEntity(questionId: Long,
                                questionType: QuestionType,
                                isImmutable: Boolean,
                                radioQuestion: RadioQuestion)
+
+case class LinkEntity(linkId: String,
+                      refererId: String,
+                      activated: Boolean)

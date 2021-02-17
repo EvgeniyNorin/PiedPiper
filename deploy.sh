@@ -23,5 +23,5 @@ build_backend() {
 }
 
 PASSWORD='nvc932'
-build_front
-#build_backend
+#build_front
+build_backend

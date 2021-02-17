@@ -20,16 +20,18 @@ object HandlerComponent {
          serviceComponent: ServiceComponent): Future[HandlerComponent] = {
     import baseComponent._
 
-    val loginHandler = new LoginHandler(daoComponent.userDao, daoComponent.userSessionDao)
     val authDirective = new AuthDirective(daoComponent.userDao, daoComponent.userSessionDao)
-    val userInfoHandler = new UserInfoHandler(authDirective)
+    val loginHandler = new LoginHandler(daoComponent.userDao, daoComponent.userSessionDao, authDirective)
+    val userInfoHandler = new UserInfoHandler(authDirective, daoComponent.userDao, daoComponent.candidateDao)
     val questionnaireHandler = new QuestionnaireHandler(
       questionnaireDao = daoComponent.questionnaireDao,
       emailService = serviceComponent.emailService,
-      candidateDao = daoComponent.candidateDao
+      candidateDao = daoComponent.candidateDao,
+      referralLinksDao = daoComponent.referralLinksDao,
+      authDirective = authDirective
     )
-    val createReferralLinkHandler = new CreateReferralLinkHandler()
-    val candidatesListHandler = new CandidatesListHandler(daoComponent.questionnaireDao, daoComponent.candidateDao)
+    val createReferralLinkHandler = new CreateReferralLinkHandler(daoComponent.referralLinksDao, authDirective)
+    val candidatesListHandler = new CandidatesListHandler(daoComponent.questionnaireDao, daoComponent.candidateDao, authDirective)
     val resourceHandler = new ResourceHandler(configComponent.frontendDirectory)
     Future.successful(new HandlerComponent(
       loginHandler,

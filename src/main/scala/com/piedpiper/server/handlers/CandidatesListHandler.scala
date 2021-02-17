@@ -4,7 +4,13 @@ import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import com.piedpiper.dao._
-import com.piedpiper.server.{CandidateEntityResponse, CandidateFilledFormResponse, CandidatesListResponse, QuestionResponse}
+import com.piedpiper.server.directives.AuthDirective
+import com.piedpiper.server.{
+  CandidateEntityResponse,
+  CandidateFilledFormResponse,
+  CandidatesListResponse,
+  QuestionResponse
+}
 import com.typesafe.scalalogging.Logger
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
@@ -12,13 +18,14 @@ import io.circe.generic.auto._
 import scala.concurrent.{ExecutionContext, Future}
 
 class CandidatesListHandler(questionnaireDao: QuestionnaireDao,
-                            candidateDao: CandidateDao)(
+                            candidateDao: CandidateDao,
+                            authDirective: AuthDirective)(
   implicit ma: Materializer,
   executionContext: ExecutionContext,
   logger: Logger
 ) {
-  private val fioQuestionId = "1"
-  private val positionQuestionId = "2"
+  private val fioQuestionId = 1
+  private val positionQuestionId = 2
 
   private def toCandidateList(
     candidateEntities: List[CandidateEntity]
@@ -45,16 +52,17 @@ class CandidatesListHandler(questionnaireDao: QuestionnaireDao,
       candidate: CandidateEntity,
       questions: List[TextQuestionEntity]
     ): List[QuestionResponse] = {
-      candidate.form.textQuestions.map { textForm =>
-        QuestionResponse(
-          id = textForm.questionId,
-          question = questions
-            .find(_.questionId == textForm.questionId)
-            .get
-            .textQuestion
-            .question,
-          answer = textForm.answer
-        )
+      candidate.form.textQuestions.flatMap { textForm =>
+        questions
+          .find(_.questionId == textForm.questionId)
+          .map(
+            textEntity =>
+              QuestionResponse(
+                id = textForm.questionId,
+                question = textEntity.textQuestion.question,
+                answer = textForm.answer
+            )
+          )
       }
     }
 
@@ -77,7 +85,7 @@ class CandidatesListHandler(questionnaireDao: QuestionnaireDao,
 
     for {
       candidate <- candidateDao.getCandidate(candidateId).map(_.get)
-      textQuestions <- questionnaireDao.getTextQuestions
+      textQuestions <- questionnaireDao.getAllTextQuestions
       radioQuestions <- questionnaireDao.getRadioQuestions
     } yield
       CandidateFilledFormResponse(
@@ -89,12 +97,17 @@ class CandidatesListHandler(questionnaireDao: QuestionnaireDao,
   val route: Route = get {
     pathPrefix("api") {
       path("candidates" / "list") {
-        onSuccess(candidateDao.getCandidatesList.map(toCandidateList))(
-          res => complete(res)
+        authDirective.requireReviewer(
+          _ =>
+            onSuccess(candidateDao.getCandidatesList.map(toCandidateList))(
+              res => complete(res)
+          )
         )
       } ~
         path("candidates" / Remaining) { candidateId =>
-          onSuccess(toCandidateForm(candidateId))(res => complete(res))
+          authDirective.requireReviewer(
+            _ => onSuccess(toCandidateForm(candidateId))(res => complete(res))
+          )
         }
     }
   }

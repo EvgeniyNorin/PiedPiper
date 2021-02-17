@@ -1,7 +1,7 @@
 package com.piedpiper.components
 
 import cats.effect.{ContextShift, IO}
-import com.piedpiper.dao.{CandidateDao, QuestionnaireDao, UserDao, UserSessionDao}
+import com.piedpiper.dao.{CandidateDao, QuestionnaireDao, ReferralLinksDao, UserDao, UserSessionDao}
 import doobie.util.transactor.Transactor
 import doobie.util.transactor.Transactor.Aux
 
@@ -10,7 +10,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class DaoComponent(val userDao: UserDao,
                    val userSessionDao: UserSessionDao,
                    val candidateDao: CandidateDao,
-                   val questionnaireDao: QuestionnaireDao)
+                   val questionnaireDao: QuestionnaireDao,
+                   val referralLinksDao: ReferralLinksDao)
 
 object DaoComponent {
   def mk(oracleConfig: OracleConfig)(implicit cs: ContextShift[IO], ex: ExecutionContext): Future[DaoComponent] = {
@@ -24,7 +25,8 @@ object DaoComponent {
       new UserDao(),
       new UserSessionDao(),
       new CandidateDao(),
-      new QuestionnaireDao()
+      new QuestionnaireDao(),
+      new ReferralLinksDao()
     ))
   }
 }

@@ -12,7 +12,8 @@ import doobie.util.Put
 import scala.concurrent.Future
 
 class UserSessionDao()(implicit xa: Transactor[IO]) {
-  implicit val offsetDateTimePut: Put[OffsetDateTime] = Put[Instant].contramap(_.toInstant)
+  implicit val offsetDateTimePut: Put[OffsetDateTime] =
+    Put[Instant].contramap(_.toInstant)
 
   def find(token: String): Future[List[SessionEntity]] =
     sql"""select * from PIED_PIPER_USER_SESSION
@@ -22,25 +23,28 @@ class UserSessionDao()(implicit xa: Transactor[IO]) {
       .transact(xa)
       .unsafeToFuture()
 
-  def updateSessionIdTtl(sessionId: String, creationDate: OffsetDateTime): Future[Unit] =
+  def updateSessionIdTtl(sessionId: String,
+                         creationDate: OffsetDateTime): Future[Unit] =
     sql"""
           UPDATE PIED_PIPER_USER_SESSION
           SET CREATION_DATE=$creationDate
           WHERE TOKEN_VALUE=$sessionId
-         """
-      .update
-      .run
+         """.update.run
       .transact(xa)
       .as(())
       .unsafeToFuture()
 
-
   def insert(userId: String, token: String): Future[Unit] = {
     val now: OffsetDateTime = OffsetDateTime.now()
     sql"""insert into PIED_PIPER_USER_SESSION (USER_ID, TOKEN_VALUE, CREATION_DATE)
-         VALUES ($userId, $token, $now)"""
-      .update
-      .run
+         VALUES ($userId, $token, $now)""".update.run
+      .transact(xa)
+      .as(())
+      .unsafeToFuture()
+  }
+
+  def delete(sessionId: String): Future[Unit] = {
+    sql"""delete from PIED_PIPER_USER_SESSION where TOKEN_VALUE=$sessionId""".update.run
       .transact(xa)
       .as(())
       .unsafeToFuture()
