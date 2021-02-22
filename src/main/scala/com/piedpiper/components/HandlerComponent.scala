@@ -22,13 +22,14 @@ object HandlerComponent {
 
     val authDirective = new AuthDirective(daoComponent.userDao, daoComponent.userSessionDao)
     val loginHandler = new LoginHandler(daoComponent.userDao, daoComponent.userSessionDao, authDirective)
-    val userInfoHandler = new UserInfoHandler(authDirective, daoComponent.userDao, daoComponent.candidateDao)
+    val userInfoHandler = new UserInfoHandler(authDirective, daoComponent.userDao, daoComponent.candidateDao, serviceComponent.emailService)
     val questionnaireHandler = new QuestionnaireHandler(
       questionnaireDao = daoComponent.questionnaireDao,
       emailService = serviceComponent.emailService,
       candidateDao = daoComponent.candidateDao,
       referralLinksDao = daoComponent.referralLinksDao,
-      authDirective = authDirective
+      authDirective = authDirective,
+      scoringService = serviceComponent.questionnaireScoringService
     )
     val createReferralLinkHandler = new CreateReferralLinkHandler(daoComponent.referralLinksDao, authDirective)
     val candidatesListHandler = new CandidatesListHandler(daoComponent.questionnaireDao, daoComponent.candidateDao, authDirective)

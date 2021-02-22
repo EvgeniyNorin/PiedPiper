@@ -1,25 +1,34 @@
 package com.piedpiper.server.handlers
 
+import java.util.UUID
+
 import akka.http.scaladsl.server.Directives.{entity, _}
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
 import com.piedpiper.common._
 import com.piedpiper.dao.{CandidateDao, UserDao, UserEntity}
+import com.piedpiper.mail.EmailService
 import com.piedpiper.server.directives.AuthDirective
 import com.piedpiper.server._
 import com.typesafe.scalalogging.Logger
 import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
 import io.circe.generic.auto._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 class UserInfoHandler(authDirective: AuthDirective,
                       userDao: UserDao,
-                      candidateDao: CandidateDao)(
+                      candidateDao: CandidateDao,
+                      emailService: EmailService)(
   implicit ma: Materializer,
   executionContext: ExecutionContext,
   logger: Logger
 ) {
+  private val emailQuestionId = 3
+  private val fioId = 1
+  private val subject = "Работа в Pied Piper"
+  private val rejectionContent = "Простите, вы нам не подходите"
+
   private def toUserInfoResponse(user: User): UserInfoResponse = {
     user match {
       case Referer(_, _, name, surname, patronymic, role) =>
@@ -58,6 +67,42 @@ class UserInfoHandler(authDirective: AuthDirective,
           )
         )
       case Role.ADMINISTRATOR => None
+    }
+  }
+
+  def handleRejection(candidateId: String): Future[Unit] = {
+    candidateDao.getCandidate(candidateId).flatMap {
+      _.fold(Future.successful(())) { candidate =>
+        val email =
+          candidate.form.textQuestions
+            .find(_.questionId == emailQuestionId)
+            .map(_.answer)
+            .get
+        val fio =
+          candidate.form.textQuestions
+            .find(_.questionId == fioId)
+            .map(_.answer)
+            .get
+        emailService.sendRejection(email, fio)
+      }
+    }
+  }
+
+  def handleInvitation(candidateId: String): Future[Unit] = {
+    candidateDao.getCandidate(candidateId).flatMap {
+      _.fold(Future.successful(())) { candidate =>
+        val email =
+          candidate.form.textQuestions
+            .find(_.questionId == emailQuestionId)
+            .map(_.answer)
+            .get
+        val fio =
+          candidate.form.textQuestions
+            .find(_.questionId == fioId)
+            .map(_.answer)
+            .get
+        emailService.sendInvitation(email, fio)
+      }
     }
   }
 
@@ -111,16 +156,26 @@ class UserInfoHandler(authDirective: AuthDirective,
       } ~ path("approve-user" / Remaining) { candidateId =>
         authDirective.requireReviewer(
           _ =>
-            onSuccess(candidateDao.setApproved(candidateId))(
-              complete(ApproveResponse())
-          )
+            onSuccess(
+              handleInvitation(candidateId)
+                .flatMap(
+                  _ =>
+                    candidateDao
+                      .setApproved(candidateId)
+                )
+            )(complete(ApproveResponse()))
         )
       } ~ path("disapprove-user" / Remaining) { candidateId =>
         authDirective.requireReviewer(
           _ =>
-            onSuccess(candidateDao.deleteCandidate(candidateId))(
-              complete(DisapproveResponse())
-          )
+            onSuccess(
+              handleRejection(candidateId)
+                .flatMap(
+                  _ =>
+                    candidateDao
+                      .deleteCandidate(candidateId)
+                )
+            )(complete(DisapproveResponse()))
         )
       }
     }
