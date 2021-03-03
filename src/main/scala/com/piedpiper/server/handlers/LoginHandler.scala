@@ -2,10 +2,11 @@ package com.piedpiper.server.handlers
 
 import java.util.UUID
 
-import akka.http.scaladsl.model.{HttpEntity, HttpResponse, StatusCodes}
+import akka.http.scaladsl.model.{ContentType, ContentTypes, HttpEntity, HttpResponse, StatusCodes}
 import akka.http.scaladsl.server.Directives.{entity, _}
 import akka.http.scaladsl.server.Route
 import akka.stream.Materializer
+import akka.util.ByteString
 import com.piedpiper.dao.{UserDao, UserSessionDao}
 import com.piedpiper.server.directives.AuthDirective
 import com.piedpiper.server.{AuthRequest, AuthResponse, SessionDeactivateResponse}
@@ -31,7 +32,7 @@ class LoginHandler(userDao: UserDao, userSessionDao: UserSessionDao, authDirecti
           val token = UUID.randomUUID().toString
           userSessionDao
             .insert(entity.userId, token)
-            .map(_ => Right(AuthResponse(token, entity.userRoleType)))
+            .map(_ => Right(AuthResponse(Some(token), Some(entity.userRoleType))))
         case None =>
           logger.info(s"User not found for body: ${authRequest.toString}")
           Future.successful(Left(new RuntimeException("User entity not found")))
@@ -49,12 +50,7 @@ class LoginHandler(userDao: UserDao, userSessionDao: UserSessionDao, authDirecti
         entity(as[AuthRequest]) { authRequest: AuthRequest =>
           onSuccess(getOrUpdateToken(authRequest)) {
             case Left(th) =>
-              complete(
-                HttpResponse(
-                  status = StatusCodes.Unauthorized,
-                  entity = HttpEntity.Empty
-                )
-              )
+              complete(AuthResponse(None, None))
             case Right(response) =>
               complete(response)
           }

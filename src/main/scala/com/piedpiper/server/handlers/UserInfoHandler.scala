@@ -26,8 +26,6 @@ class UserInfoHandler(authDirective: AuthDirective,
 ) {
   private val emailQuestionId = 3
   private val fioId = 1
-  private val subject = "Работа в Pied Piper"
-  private val rejectionContent = "Простите, вы нам не подходите"
 
   private def toUserInfoResponse(user: User): UserInfoResponse = {
     user match {
@@ -70,7 +68,7 @@ class UserInfoHandler(authDirective: AuthDirective,
     }
   }
 
-  def handleRejection(candidateId: String): Future[Unit] = {
+  private def handleRejection(candidateId: String): Future[Unit] = {
     candidateDao.getCandidate(candidateId).flatMap {
       _.fold(Future.successful(())) { candidate =>
         val email =
@@ -88,7 +86,7 @@ class UserInfoHandler(authDirective: AuthDirective,
     }
   }
 
-  def handleInvitation(candidateId: String): Future[Unit] = {
+  private def handleInvitation(candidateId: String): Future[Unit] = {
     candidateDao.getCandidate(candidateId).flatMap {
       _.fold(Future.successful(())) { candidate =>
         val email =

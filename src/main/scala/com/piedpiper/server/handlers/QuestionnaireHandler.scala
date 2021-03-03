@@ -30,7 +30,7 @@ class QuestionnaireHandler(questionnaireDao: QuestionnaireDao,
   private val emailQuestionId = 3
   private val fioId = 1
 
-  def processForm(req: QuestionnaireFormPutRequest): Future[Unit] = {
+  private def processForm(req: QuestionnaireFormPutRequest): Future[Unit] = {
     val email =
       req.textQuestions.find(_.questionId == emailQuestionId).map(_.answer).get
     val fio =

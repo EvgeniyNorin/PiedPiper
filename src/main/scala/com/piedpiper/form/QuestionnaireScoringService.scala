@@ -4,22 +4,22 @@ import com.piedpiper.form.QuestionnaireScoringService.{ScoredQuestion, TwoOption
 import com.piedpiper.server.QuestionnaireFormPutRequest
 
 class QuestionnaireScoringService() {
-  private val mapForScoring = Set("1", "2", "3", "4", "5")
-  private val workBeforeNoonId = TwoOptionsQuestion(6, "Да")
-  private val indentationCharacterId = TwoOptionsQuestion(7, "Tab")
-  private val loveDogsId = TwoOptionsQuestion(8, "Да")
-  private val toxicId = TwoOptionsQuestion(11, "Нет")
-  private val workInHooliId = TwoOptionsQuestion(12, "Да")
-  private val uselessAppsDevId = TwoOptionsQuestion(14, "Нет")
-  private val fascistId = TwoOptionsQuestion(15, "Нет")
-  private val hiddenFascistId = TwoOptionsQuestion(16, "Нет")
-  private val beardAsHairsId = TwoOptionsQuestion(17, "Нет")
-  private val tallCandidateId = TwoOptionsQuestion(18, "Нет")
-  private val assemblyKnowledgeId = ScoredQuestion(20, mapForScoring)
-  private val cppKnowledgeId = ScoredQuestion(21, mapForScoring)
-  private val pythonKnowledgeId = ScoredQuestion(22, mapForScoring)
+  private val mapForScoring: Set[String] = Set("1", "2", "3", "4", "5")
+  private val workBeforeNoonId: TwoOptionsQuestion = TwoOptionsQuestion(6, "Да")
+  private val indentationCharacterId: TwoOptionsQuestion = TwoOptionsQuestion(7, "Tab")
+  private val loveDogsId: TwoOptionsQuestion = TwoOptionsQuestion(8, "Да")
+  private val toxicId: TwoOptionsQuestion = TwoOptionsQuestion(11, "Нет")
+  private val workInHooliId: TwoOptionsQuestion = TwoOptionsQuestion(12, "Да")
+  private val uselessAppsDevId: TwoOptionsQuestion = TwoOptionsQuestion(14, "Нет")
+  private val fascistId: TwoOptionsQuestion = TwoOptionsQuestion(15, "Нет")
+  private val hiddenFascistId: TwoOptionsQuestion = TwoOptionsQuestion(16, "Нет")
+  private val beardAsHairsId: TwoOptionsQuestion = TwoOptionsQuestion(17, "Нет")
+  private val tallCandidateId: TwoOptionsQuestion = TwoOptionsQuestion(18, "Нет")
+  private val assemblyKnowledgeId: ScoredQuestion = ScoredQuestion(20, mapForScoring)
+  private val cppKnowledgeId: ScoredQuestion = ScoredQuestion(21, mapForScoring)
+  private val pythonKnowledgeId: ScoredQuestion = ScoredQuestion(22, mapForScoring)
 
-  private val twoOptionsQuestions = List(
+  private val twoOptionsQuestions: Seq[TwoOptionsQuestion] = List(
     workBeforeNoonId,
     indentationCharacterId,
     loveDogsId,
@@ -32,11 +32,11 @@ class QuestionnaireScoringService() {
     tallCandidateId
   )
 
-  private val scoredQuestion =
+  private val scoredQuestion: Seq[ScoredQuestion] =
     List(assemblyKnowledgeId, cppKnowledgeId, pythonKnowledgeId)
 
-  private val realLinkWeight = 3
-  private val borderValue = 15
+  private val realLinkWeight: Int = 3
+  private val borderValue: Int = 15
 
   def isAppropriate(req: QuestionnaireFormPutRequest,
                     isReferralLinkReal: Boolean): Boolean = {

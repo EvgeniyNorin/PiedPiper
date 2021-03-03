@@ -4,7 +4,7 @@ import com.piedpiper.common.Role
 
 case class AuthRequest(login: String, password: String)
 
-case class AuthResponse(token: String, role: Role)
+case class AuthResponse(token: Option[String], role: Option[Role])
 
 case class UserInfoResponse(name: String,
                             surname: String,
